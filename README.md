@@ -1,6 +1,6 @@
 # lean-web-stack
 
-A lean starter for AI-heavy web apps: **React + FastAPI + Celery + Postgres + Redis + PydanticAI**.
+A lean starter for AI-heavy web apps: **React + MUI + Redux Toolkit + FastAPI + Celery + Postgres + Redis + PydanticAI**.
 
 - Two folders, two package managers you already know: `frontend/` (npm) and `backend/` (uv).
 - No monorepo tooling. A `Makefile` and `compose.yml` at the root tie it together.
@@ -24,7 +24,7 @@ make setup
 make dev
 ```
 
-Open http://localhost:5173. You get a notes page (create a note, click **Summarise**: that runs an AI job on a Celery worker) and a streaming chat panel.
+Open http://localhost:5173. You get a **Notes** page (create a note, click **Summarise**: that runs an AI job on a Celery worker) and a streaming **Chat** page.
 API docs: http://localhost:8000/docs.
 
 Ports busy on your machine? Edit `.env` (created by `make setup`), see [First day](docs/playbooks/00-first-day.md#ports).
@@ -48,10 +48,15 @@ Ports busy on your machine? Edit `.env` (created by `make setup`), see [First da
 ├─ .github/workflows/ci.yml        path-filtered CI + contract check + build/deploy on main
 ├─ docs/playbooks/                 how-to guides (start here)
 ├─ scripts/new-project.sh          start a new project from this template
-├─ frontend/                       npm · Vite + React + TS · vitest · eslint
+├─ frontend/                       npm · Vite + React + TS · MUI v9 · RTK Query · React Router · RHF + Zod · vitest
+│  ├─ CLAUDE.md                    frontend rules for AI assistants (incl. MUI v9 gotchas)
 │  └─ src/
+│     ├─ app/                      theme, providers, router, store
+│     ├─ services/baseApi.ts       RTK Query root + fromApi() over the typed client
 │     ├─ api/                      client.ts (openapi-fetch) + schema.d.ts (generated)
-│     └─ features/                 notes/ (CRUD + AI summary job), chat/ (SSE stream)
+│     ├─ pages/                    one per route (lazy-loaded)
+│     ├─ components/               shared UI: layout, QueryState, FormDialog, form/ inputs
+│     └─ features/                 notes/ (CRUD + filters + AI summary job), chat/ (SSE stream)
 └─ backend/                        uv · one package "app" · one Dockerfile
    ├─ app/core/                    settings (env only), db (async + sync engines), redis
    ├─ app/models/                  SQLAlchemy models
@@ -75,6 +80,7 @@ Ports busy on your machine? Edit `.env` (created by `make setup`), see [First da
 | 6 | [Build and deploy](docs/playbooks/06-build-and-deploy.md) | you ship, or plan scaling |
 | 7 | [New project from this template](docs/playbooks/07-new-project.md) | you start a new app |
 | 8 | [Troubleshooting](docs/playbooks/08-troubleshooting.md) | something is off |
+| 9 | [Frontend (MUI, RTK Query, Router)](docs/playbooks/09-frontend-ui.md) | before your first frontend change |
 
 ## When to add more tooling
 

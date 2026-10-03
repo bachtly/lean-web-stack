@@ -13,5 +13,14 @@ export default defineConfig({
     proxy: { '/api': { target: API_URL, changeOrigin: true } },
   },
   preview: { port: WEB_PORT, strictPort: true },
-  test: { environment: 'jsdom' },
+  build: {
+    rollupOptions: {
+      output: {
+        // MUI core + Emotion change less often than app code, so they get their own long-cached chunk.
+        // MUI X (date pickers) is left out so it stays in the lazy page chunks that use it.
+        manualChunks: (id) => (/node_modules\/(@mui\/(?!x-)|@emotion\/)/.test(id) ? 'mui' : undefined),
+      },
+    },
+  },
+  test: { environment: 'jsdom', setupFiles: ['./src/test/setup.ts'] },
 })

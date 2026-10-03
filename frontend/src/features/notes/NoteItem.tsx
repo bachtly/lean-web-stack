@@ -1,47 +1,57 @@
+import Alert from '@mui/material/Alert'
+import Button from '@mui/material/Button'
+import Chip from '@mui/material/Chip'
+import Paper from '@mui/material/Paper'
+import Stack from '@mui/material/Stack'
+import Typography from '@mui/material/Typography'
+import dayjs from 'dayjs'
+import { useSnackbar } from 'notistack'
 import { useState } from 'react'
-import type { components } from '../../api/schema'
-import { summariseNote } from './summary'
+import { SENTIMENT_META } from './noteMeta'
+import { useSummariseNoteMutation, type Note } from './notesApi'
 
-type Note = components['schemas']['NoteOut']
-
-export function NoteItem({ note, onChanged }: { note: Note; onChanged: () => void }) {
-  const [pending, setPending] = useState(false)
+export function NoteItem({ note }: { note: Note }) {
+  const [summarise, { isLoading }] = useSummariseNoteMutation()
+  const { enqueueSnackbar } = useSnackbar()
   const [error, setError] = useState<string | null>(null)
 
   async function onSummarise() {
-    setPending(true)
     setError(null)
     try {
-      await summariseNote(note.id)
-      onChanged()
+      await summarise(note.id).unwrap()
+      enqueueSnackbar('Summary ready', { variant: 'success' })
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Summary failed')
-    } finally {
-      setPending(false)
+      // Shown inline: the error belongs to this note, not to the page.
+      setError(e && typeof e === 'object' && 'message' in e ? String(e.message) : 'Summary failed')
     }
   }
 
   return (
-    <li>
-      <strong>{note.title}</strong>
-      <p>{note.body}</p>
-      <small>{new Date(note.created_at).toLocaleString()}</small>{' '}
-      <button onClick={onSummarise} disabled={pending} aria-busy={pending}>
-        {pending ? 'Summarising…' : 'Summarise'}
-      </button>
-      {error && <p role="alert">{error}</p>}
-      {note.summary && (
-        <div>
-          <em>{note.summary}</em> <span>({note.sentiment})</span>
-          <div>
-            {note.tags?.map((t) => (
-              <span key={t} className="chip" style={{ border: '1px solid #999', borderRadius: 12, padding: '0 8px', marginRight: 4 }}>
-                {t}
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
-    </li>
+    <Paper component="li" sx={{ p: 2 }}>
+      <Stack spacing={1}>
+        <Stack direction="row" spacing={2} sx={{ alignItems: 'center', justifyContent: 'space-between' }}>
+          <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
+            {note.title}
+          </Typography>
+          <Button size="small" variant="outlined" onClick={onSummarise} loading={isLoading} loadingPosition="start">
+            {isLoading ? 'Summarising…' : 'Summarise'}
+          </Button>
+        </Stack>
+        <Typography>{note.body}</Typography>
+        <Typography variant="caption" color="text.secondary">
+          {dayjs(note.created_at).format('D MMM YYYY, HH:mm')}
+        </Typography>
+        {error && <Alert severity="error">{error}</Alert>}
+        {note.summary && (
+          <Stack spacing={1}>
+            <Typography sx={{ fontStyle: 'italic' }}>{note.summary}</Typography>
+            <Stack direction="row" spacing={0.5} useFlexGap sx={{ flexWrap: 'wrap' }}>
+              {note.sentiment && <Chip label={SENTIMENT_META[note.sentiment].label} color={SENTIMENT_META[note.sentiment].color} />}
+              {note.tags?.map((t) => <Chip key={t} label={t} variant="outlined" />)}
+            </Stack>
+          </Stack>
+        )}
+      </Stack>
+    </Paper>
   )
 }
