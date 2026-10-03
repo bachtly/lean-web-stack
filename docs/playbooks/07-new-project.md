@@ -28,19 +28,23 @@ make check
 make dev
 ```
 
-## 4. Remove the examples when you're ready
+## 4. Rebrand the UI
+
+Edit `frontend/src/app/theme.ts` (palette for light and dark, font, corner radius) and the title in `frontend/index.html` and `frontend/src/components/layout/AppShell.tsx`. Components use theme tokens, so nothing else changes. See [Frontend](09-frontend-ui.md#7-dark-mode-and-theming).
+
+## 5. Remove the examples when you're ready
 
 The notes, summary and chat features are working references. Keep them until your first real feature works, then delete them:
 
 | Remove | Files |
 |---|---|
-| Notes + AI summary | `backend/app/api/routes/notes.py`, `backend/app/models/note.py`, `backend/app/ai/summary.py`, `llm_summarize_note` in `backend/app/worker/tasks.py`, `backend/tests/test_notes.py`, `backend/tests/test_summary.py`, `frontend/src/features/notes/` |
-| Chat | `backend/app/api/routes/chat.py`, `backend/app/ai/agents.py`, `backend/tests/test_chat.py`, `frontend/src/features/chat/` |
+| Notes + AI summary | `frontend/src/pages/NotesPage*.tsx`, `backend/app/api/routes/notes.py`, `backend/app/models/note.py`, `backend/app/ai/summary.py`, `llm_summarize_note` in `backend/app/worker/tasks.py`, `backend/tests/test_notes.py`, `backend/tests/test_summary.py`, `frontend/src/features/notes/` |
+| Chat | `backend/app/api/routes/chat.py`, `backend/app/ai/agents.py`, `backend/tests/test_chat.py`, `frontend/src/features/chat/`, `frontend/src/pages/ChatPage.tsx` |
 | Demo job | `word_stats` in `tasks.py` and its route in `backend/app/api/routes/jobs.py` (keep `GET /api/jobs/{id}` and the `Job` model) |
 
 Then:
 1. Unregister the routers in `backend/app/api/main.py` and the imports in `backend/app/models/__init__.py`.
-2. Update `frontend/src/App.tsx`.
+2. Frontend: remove the routes in `src/app/router.tsx`, the links in `NAV_LINKS` (`src/components/layout/AppShell.tsx`), `notesFilterSlice` in `src/app/store.ts`, and the `'Note'` tag in `src/services/baseApi.ts`. Keep `src/app/`, `src/components/`, `src/hooks/`, `src/services/` and `src/test/`.
 3. Add a migration that drops the `notes` table (`alembic revision --autogenerate`).
 4. Run `make gen` and `make check`.
 
