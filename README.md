@@ -81,6 +81,7 @@ Ports busy on your machine? Edit `.env` (created by `make setup`), see [First da
 | 7 | [New project from this template](docs/playbooks/07-new-project.md) | you start a new app |
 | 8 | [Troubleshooting](docs/playbooks/08-troubleshooting.md) | something is off |
 | 9 | [Frontend (MUI, RTK Query, Router)](docs/playbooks/09-frontend-ui.md) | before your first frontend change |
+| 10 | [Parallel agents](docs/playbooks/10-parallel-agents.md) | several agents or worktrees share one Postgres/Redis |
 
 ## When to add more tooling
 
