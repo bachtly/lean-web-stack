@@ -24,7 +24,14 @@ setup:
 	cd frontend && npm ci
 	test -f .env || cp .env.example .env
 
-dev:
+# npm writes node_modules/.package-lock.json on install: reinstall when package-lock.json is newer
+# (e.g. after a git pull). uv run already re-syncs backend/.venv on its own.
+FRONTEND_DEPS := frontend/node_modules/.package-lock.json
+$(FRONTEND_DEPS): frontend/package-lock.json
+	cd frontend && npm ci
+check: $(FRONTEND_DEPS)
+
+dev: $(FRONTEND_DEPS)
 	$(COMPOSE) up -d --wait db redis
 	cd backend && uv run alembic upgrade head
 	trap 'kill 0' INT TERM EXIT; \
