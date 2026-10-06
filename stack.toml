@@ -1,0 +1,41 @@
+# App stack for parallel agents: see scripts/stack.py and "Parallel agents" in CLAUDE.md.
+# ${VAR:-default} reads the environment first, then the main checkout's .env.
+
+[project]
+env_file = ".env"
+
+[pools.db]  # dev DBs: app_template, plus app_s<N> cloned from it
+url = "postgresql+psycopg://app:app@127.0.0.1:${DB_PORT:-5432}"
+env = "DATABASE_URL"
+
+[pools.db_test]  # test DBs: app_test_s<N>, created empty (tests/conftest.py builds the schema)
+url = "postgresql+psycopg://app:app@127.0.0.1:${DB_PORT:-5432}"
+env = "TEST_DATABASE_URL"
+
+[pools.redis]  # slot N uses Redis DB index N
+url = "redis://127.0.0.1:${REDIS_PORT:-6379}"
+env = "REDIS_URL"
+
+[names]
+dev = "app_s"
+test = "app_test_s"
+
+[template]  # `scripts/stack template refresh` builds app_template_new, then swaps
+name = "app_template"
+cwd = "backend"
+build = ["uv run alembic upgrade head"]  # add your seed script here once you have one
+revision_sql = "SELECT version_num FROM alembic_version"
+migrations = "backend/migrations/versions"
+
+[ports]  # API_PORT = 8100 + N, WEB_PORT = 5200 + N
+api = 8100
+web = 5200
+
+[limits]
+slots = 6      # slots 1..6
+heavy = 2      # concurrent `scripts/stack run --heavy` jobs; the rest queue
+grace_s = 600  # an idle slot is reclaimable after this, only when every slot is taken
+
+[infra]  # what `scripts/stack infra ensure` starts (never recreates)
+compose_file = "compose.yml"
+services = ["db", "redis"]
