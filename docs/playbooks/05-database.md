@@ -2,7 +2,7 @@
 
 - Postgres 16 with pgvector (`pgvector/pgvector:pg16`), in Docker.
 - SQLAlchemy 2 with psycopg 3. One URL serves the async engine (API) and the sync engine (Celery tasks), see `backend/app/core/db.py`.
-- Tests use a separate database `app_test`, created by `backend/scripts/init-test-db.sql` on the first start of the db container. Tables are recreated per test.
+- Tests use a separate database `app_test`, created by `backend/scripts/init-test-db.sql` on the first start of the db container. The schema is built once per session; after each test marked `@pytest.mark.db` (or `pytestmark = pytest.mark.db`) all tables are truncated. An unmarked test that opens a DB connection fails with `UnmarkedDbAccess`. `uv run pytest -m "not db"` runs without Postgres.
 
 ## Change the schema
 
